@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>NNCode</title>
+</head>
+
+<script src="/index.js"></script>
+
+<body>
+    <div id="main">
+        <div>Cipher (only 26 alphanumerical characters will be used)</div>
+        <textarea id="cipher" oninput="resize(this)"></textarea>
+
+        <br>
+        <br>
+
+        <div>Usable Cipher Preview</div>
+        <textarea id="cipher_preview" placeholder="<blank>" disabled></textarea>
+
+        <hr>
+
+        <div>Message</div>
+        <textarea id="message" oninput="resize(this)" type="text"></textarea>
+
+        <br>
+        <br>
+
+        <button id="encode">Encode that thang!</button>
+        <button id="decode">Decode that thang!</button>
+
+        <hr>
+
+        <div>Output</div>
+        <textarea id="ciphertext" oninput="resize(this)" placeholder="Hack Tuah!"></textarea>
+    </div>
+</body>
+
+<style>
+    #main {
+        text-align: center;
+    }
+
+    textarea {
+        width: auto;
+        height: auto;
+
+        overflow: hidden;
+        resize: none;
+        white-space: nowrap;
+        overflow-wrap: break-word;
+
+        padding: 8px 12px;
+        margin: 8px;
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+    }
+</style>
+
+<script>
+    function resize(el) {
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+        el.style.width = 'auto';
+        el.style.width = el.scrollWidth + 'px';
+    }
+
+    let cipher = document.getElementById("cipher");
+    let cipher_preview = document.getElementById("cipher_preview");
+    let input = document.getElementById("message");
+    let encode = document.getElementById("encode");
+    let decode = document.getElementById("decode");
+    let output = document.getElementById("ciphertext");
+
+    encode.disabled = true;
+    decode.disabled = true;
+
+    let cipher_usable = false;
+    let message_usable = false;
+
+    function updateEncodeButton() {
+        encode.disabled = !(cipher_usable && message_usable);
+        decode.disabled = !(cipher_usable && message_usable);
+    }
+
+    cipher.addEventListener("input", () => {
+        cipher_preview.value = sanitizeCipher(cipher.value);
+        resize(cipher_preview);
+        cipher_usable = !(cipher_preview.value == "" || cipher_preview.value == undefined);
+        updateEncodeButton();
+    });
+
+    message.addEventListener("input", () => {
+        message_usable = !(message.value == "" || message.value == undefined);
+        updateEncodeButton();
+    });
+
+    // experiment: swapping "output" with "input"
+
+    encode.addEventListener("click", () => {
+        createDictionaries(cipher.value);
+        output.value = NNCode(input.value);
+        resize(output);
+    });
+
+    decode.addEventListener("click", () => {
+        createDictionaries(cipher.value);
+        output.value = DDCode(input.value);
+        resize(output);
+    });
+</script>
+
+</html>
