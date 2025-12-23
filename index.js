@@ -99,23 +99,30 @@ function DDCode(ciphertext) {
         , iterator = ciphertext.toString().toUpperCase().matchAll(/(\w|\{[0-9]+\})/g) // only match items that we can decode.
         , previous_match = {};
 
-    for (let result = iterator.next(), i = 0; !result.done; result = iterator.next(), i++) {
+    for (let result = iterator.next(), i = 0; ; result = iterator.next(), i++) {
         let current_match = result.value
-            , cipher_char = current_match[0]
-            , english_char = Object.keys(CIPHER_TO_ENGLISH_DICTIONARY).includes(cipher_char) ? CIPHER_TO_ENGLISH_DICTIONARY[cipher_char] : cipher_char;
+            , cipher_char = current_match?.[0]
+            , char = Object.keys(CIPHER_TO_ENGLISH_DICTIONARY).includes(cipher_char) ? CIPHER_TO_ENGLISH_DICTIONARY[cipher_char] : cipher_char; // just a failsafe
 
-        if (i !== 0) {
-            let l = previous_match.index + previous_match[0].length;
-            let r = current_match.index;
+        let l = previous_match?.index + previous_match?.[0]?.length;
+        let r = current_match?.index;
 
+        if (i !== 0 && !result.done) {
             if (l != r) {
-                message += ciphertext.substring(l, r); // stuff that doesn't get decoded, i.e. whitespace/special chars
+                let passthrough = ciphertext.substring(l, r);
+                message += passthrough; // stuff that doesn't get decoded, i.e. whitespace/special chars
             }
         }
 
-        message += english_char;
-        previous_match = current_match;
+        if (!result.done) { // keep going~
+            char && (message += char);
+            previous_match = current_match;
+        } else {
+            if (l != ciphertext.length) { // this would be trailing special characters that weren't picked up by the regex matcher.
+                let end = ciphertext.substring(l);
+                message += end; // from l to end
+            }
+            return message;
+        }
     }
-
-    return message;
 }

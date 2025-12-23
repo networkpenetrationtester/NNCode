@@ -8,45 +8,71 @@
 
 <script src="/index.js"></script>
 
-<body>
+<body style="background-color: black;">
     <div id="main">
-        <div>Cipher (only 26 alphanumerical characters will be used)</div>
-        <textarea id="cipher" oninput="resize(this)"></textarea>
+        <h1>NNCode</h1>
+        <!-- <textarea id="test" oninput="resize(this)" placeholder="help"></textarea> -->
 
-        <br>
-        <br>
+        <hr>
 
-        <div>Usable Cipher Preview</div>
+        <h3>Cipher</h3>
+        <h6>(only 26 alphanumerical characters will be used)</h6>
+        <textarea id="cipher" oninput="resize(this)" placeholder="Type your cipher here..."></textarea>
+        <h3>Usable Cipher Preview</h3>
         <textarea id="cipher_preview" placeholder="<blank>" disabled></textarea>
 
         <hr>
 
-        <div>Message</div>
-        <textarea id="message" oninput="resize(this)" type="text"></textarea>
-
-        <br>
-        <br>
-
-        <label>Keep Whitespace <input id="keep_whitespace" type="checkbox"></label>
-        <br>
+        <h3>Message</h3>
+        <textarea id="message" oninput="resize(this)" type="text" placeholder="Type your message here..."></textarea>
+        <h6><label>Keep Whitespace <input id="keep_whitespace" type="checkbox"></label></h6>
         <button id="encode">NNcode on that thang!</button>
         <button id="decode">DDcode on that thang!</button>
 
         <hr>
 
-        <div>Output</div>
+        <h3>Output</h3>
         <textarea id="ciphertext" oninput="resize(this)" placeholder="Hack Tuah!"></textarea>
     </div>
 </body>
 
 <style>
+    @font-face {
+        font-family: "Comic Sans MS3";
+        src: url("/comic.woff") format("woff");
+    }
+
+    @font-face {
+        font-family: "Consolas";
+        src: url("/consolas.woff") format("woff");
+    }
+
+    @font-face {
+        font-family: "Bad Handwriting";
+        src: url("/bad.woff") format("woff");
+    }
+
+    @font-face {
+        font-family: "AA Typewriter";
+        src: url("/typewriter.woff") format("woff");
+    }
+
     #main {
+        font-family: "Bad Handwriting";
         text-align: center;
-        font-family: "Comic Sans MS", cursive;
+        background-color: black;
+        color: white;
+    }
+
+    button {
+        font-family: "Bad Handwriting";
+        background-color: black;
+        color: white;
     }
 
     textarea {
-        font-family: 'Courier New', Courier, monospace;
+        font-family: "AA Typewriter";
+
         width: auto;
         height: auto;
 
@@ -57,9 +83,13 @@
 
         padding: 8px 12px;
         margin: 8px;
-        background: #f3f4f6;
-        border: 1px solid #d1d5db;
+
         border-radius: 6px;
+        /* background: #f3f4f6; */
+        background-color: black;
+        border: 1px solid gray;
+        color: white;
+
     }
 </style>
 
@@ -71,6 +101,18 @@
         el.style.width = el.scrollWidth + 'px';
     }
 
+    async function dramatic(el, text, ms = 10) {
+        el.value = "";
+        encode.disabled = true;
+        decode.disabled = true;
+        for (const char of text) {
+            await new Promise(resolve => setTimeout(resolve, ms));
+            el.value += char;
+            resize(el);
+        }
+        updateEncodeButton();
+    }
+
     const cipher = document.getElementById('cipher');
     const cipher_preview = document.getElementById('cipher_preview');
     const input = document.getElementById('message');
@@ -78,6 +120,7 @@
     const decode = document.getElementById('decode');
     const output = document.getElementById('ciphertext');
     const keep_whitespace = document.getElementById('keep_whitespace');
+    // const test = document.getElementById('test');
 
     encode.disabled = true;
     decode.disabled = true;
@@ -104,17 +147,21 @@
 
     // experiment: swapping 'output' with 'input'
 
-    encode.addEventListener('click', () => {
+    encode.addEventListener('click', async () => {
         CreateDictionaries(cipher.value);
-        output.value = NNCode(input.value, keep_whitespace.checked);
-        resize(output);
+        await dramatic(output, NNCode(input.value, keep_whitespace.checked), 10);
     });
 
-    decode.addEventListener('click', () => {
+    decode.addEventListener('click', async () => {
         CreateDictionaries(cipher.value);
-        output.value = DDCode(input.value);
-        resize(output);
+        // output.value = DDCode(input.value);
+        await dramatic(output, DDCode(input.value), 10);
     });
+
+    for (const el of document.getElementById('main').children) { // initial resize on all textarea
+        el.type === 'textarea' && resize(el);
+    }
+
 </script>
 
 </html>
