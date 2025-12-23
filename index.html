@@ -27,8 +27,10 @@
         <br>
         <br>
 
-        <button id="encode">Encode that thang!</button>
-        <button id="decode">Decode that thang!</button>
+        <label>Keep Whitespace <input id="keep_whitespace" type="checkbox"></label>
+        <br>
+        <button id="encode">NNcode on that thang!</button>
+        <button id="decode">DDcode on that thang!</button>
 
         <hr>
 
@@ -40,9 +42,11 @@
 <style>
     #main {
         text-align: center;
+        font-family: "Comic Sans MS", cursive;
     }
 
     textarea {
+        font-family: 'Courier New', Courier, monospace;
         width: auto;
         height: auto;
 
@@ -67,12 +71,13 @@
         el.style.width = el.scrollWidth + 'px';
     }
 
-    let cipher = document.getElementById("cipher");
-    let cipher_preview = document.getElementById("cipher_preview");
-    let input = document.getElementById("message");
-    let encode = document.getElementById("encode");
-    let decode = document.getElementById("decode");
-    let output = document.getElementById("ciphertext");
+    const cipher = document.getElementById('cipher');
+    const cipher_preview = document.getElementById('cipher_preview');
+    const input = document.getElementById('message');
+    const encode = document.getElementById('encode');
+    const decode = document.getElementById('decode');
+    const output = document.getElementById('ciphertext');
+    const keep_whitespace = document.getElementById('keep_whitespace');
 
     encode.disabled = true;
     decode.disabled = true;
@@ -85,28 +90,28 @@
         decode.disabled = !(cipher_usable && message_usable);
     }
 
-    cipher.addEventListener("input", () => {
-        cipher_preview.value = sanitizeCipher(cipher.value);
+    cipher.addEventListener('input', () => {
+        cipher_preview.value = SanitizeCipher(cipher.value);
         resize(cipher_preview);
-        cipher_usable = !(cipher_preview.value == "" || cipher_preview.value == undefined);
+        cipher_usable = !(cipher_preview.value == '' || cipher_preview.value == undefined);
         updateEncodeButton();
     });
 
-    message.addEventListener("input", () => {
-        message_usable = !(message.value == "" || message.value == undefined);
+    message.addEventListener('input', () => {
+        message_usable = !(message.value == '' || message.value == undefined);
         updateEncodeButton();
     });
 
-    // experiment: swapping "output" with "input"
+    // experiment: swapping 'output' with 'input'
 
-    encode.addEventListener("click", () => {
-        createDictionaries(cipher.value);
-        output.value = NNCode(input.value);
+    encode.addEventListener('click', () => {
+        CreateDictionaries(cipher.value);
+        output.value = NNCode(input.value, keep_whitespace.checked);
         resize(output);
     });
 
-    decode.addEventListener("click", () => {
-        createDictionaries(cipher.value);
+    decode.addEventListener('click', () => {
+        CreateDictionaries(cipher.value);
         output.value = DDCode(input.value);
         resize(output);
     });

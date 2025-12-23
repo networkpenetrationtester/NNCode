@@ -3,7 +3,7 @@ let ENGLISH_TO_CIPHER_DICTIONARY = {};
 let INDEX_MAPPINGS = {};
 const ENGLISH_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-function sanitizeCipher(cipher) {
+function SanitizeCipher(cipher) {
     return cipher
         ?.toString()
         ?.toUpperCase() // consistent with dictionary
@@ -14,16 +14,16 @@ function sanitizeCipher(cipher) {
         ?? ''; // if the cipher is unusable, prevent undefined & display '<blank>'
 }
 
-function resetDictionaries() {
+function ResetDictionaries() {
     CIPHER_TO_ENGLISH_DICTIONARY = {};
     ENGLISH_TO_CIPHER_DICTIONARY = {};
     INDEX_MAPPINGS = {};
 }
 
-function createDictionaries(cipher) {
-    resetDictionaries();
+function CreateDictionaries(cipher) {
+    ResetDictionaries();
 
-    let CIPHERTEXT = sanitizeCipher(cipher);
+    let CIPHERTEXT = SanitizeCipher(cipher);
 
     for (const english_letter of ENGLISH_ALPHABET) { // populate the default english dictionary
         ENGLISH_TO_CIPHER_DICTIONARY[english_letter] = null;
@@ -64,10 +64,10 @@ function createDictionaries(cipher) {
     // console.log(ENGLISH_TO_CIPHER_DICTIONARY);
     // console.log(CIPHER_TO_ENGLISH_DICTIONARY);
 
-    testDictionaries();
+    TestDictionaries();
 }
 
-function testDictionaries() {
+function TestDictionaries() {
     for (const e2c_key in ENGLISH_TO_CIPHER_DICTIONARY) {
         // e2c_key is the letter of the english alphabet
         const e2c_value = ENGLISH_TO_CIPHER_DICTIONARY[e2c_key];
@@ -81,7 +81,7 @@ function testDictionaries() {
     }
 }
 
-function NNCode(message) {
+function NNCode(message, keep_whitespace = false) {
     let ciphertext = '';
     message = message.toString().toUpperCase();
 
@@ -89,7 +89,9 @@ function NNCode(message) {
         ciphertext += Object.keys(ENGLISH_TO_CIPHER_DICTIONARY).includes(char) ? ENGLISH_TO_CIPHER_DICTIONARY[char] : char;
     }
 
-    return ciphertext.replace(/\s/g, ''); // make the boundaries between words less obvious lmao
+    if (!keep_whitespace) ciphertext = ciphertext.replace(/\s/g, '');  // make the boundaries between words less obvious lmao
+
+    return ciphertext;
 }
 
 function DDCode(ciphertext) {
