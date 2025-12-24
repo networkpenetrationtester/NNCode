@@ -1,20 +1,26 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const fs = require('fs');
 
-path.join = (...args) => {
-    let _path = args.join(path.sep);
-    console.log(`Loaded ${_path}`);
-    return _path;
+
+const middleware = (req, res, next) => {
+    let _path = path.join(__dirname, req.path);
+    let exists = fs.existsSync(_path);
+    console.log(`${req.host} REQUESTS ${_path} [${exists ? '200' : '404'}]`);
+    if (!exists) { res.send('404'); return; }
+    next();
 }
 
-app.get('/index.js', (req, res) => res.sendFile(path.join(__dirname, 'index.js')));
-app.get('/bad.woff', (req, res) => res.sendFile(path.join(__dirname, 'bad.woff')));
-app.get('/comic.woff', (req, res) => res.sendFile(path.join(__dirname, 'comic.woff')));
-app.get('/consolas.woff', (req, res) => res.sendFile(path.join(__dirname, 'consolas.woff')));
-app.get('/typewriter.woff', (req, res) => res.sendFile(path.join(__dirname, 'typewriter.woff')));
+app.use(middleware);
 
-app.get('/nncode', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/*any', (req, res) => {
+    res.sendFile(path.join(__dirname, req.path));
+});
 
 app.listen(6767, () => {
     console.log('Started webserver.');
