@@ -1,23 +1,11 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const os = require('os');
-const fs = require('fs');
-
-switch (os.platform()) {
-    case 'win32':
-        path.sep = '\\';
-        break;
-    default:
-        path.sep = '/';
-}
-
-console.log(path.sep);
 
 path.join = (...args) => {
-    let p = args.join(path.sep);
-    console.log(`Loaded ${p}`);
-    return p;
+    let _path = args.join(path.sep);
+    console.log(`Loaded ${_path}`);
+    return _path;
 }
 
 app.get('/index.js', (req, res) => res.sendFile(path.join(__dirname, 'index.js')));
@@ -26,9 +14,7 @@ app.get('/comic.woff', (req, res) => res.sendFile(path.join(__dirname, 'comic.wo
 app.get('/consolas.woff', (req, res) => res.sendFile(path.join(__dirname, 'consolas.woff')));
 app.get('/typewriter.woff', (req, res) => res.sendFile(path.join(__dirname, 'typewriter.woff')));
 
-app.get('*any', (req, res) => {
-    res.sendFile(`${__dirname}\\index.html`);
-});
+app.get('/nncode', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.listen(6767, () => {
     console.log('Started webserver.');
