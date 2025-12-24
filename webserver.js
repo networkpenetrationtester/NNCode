@@ -1,10 +1,12 @@
 const express = require('express');
 const app = express();
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 
-console.log(path.sep);
+path.join = (...args) => {
+    let p = args.join(path.sep);
+    console.log(`Loaded ${p}`);
+    return p;
+}
 
 app.get('/index.js', (req, res) => res.sendFile(path.join(__dirname, 'index.js')));
 app.get('/bad.woff', (req, res) => res.sendFile(path.join(__dirname, 'bad.woff')));
