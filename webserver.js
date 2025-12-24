@@ -1,6 +1,15 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const os = require('os');
+
+switch (os.platform()) {
+    case 'win32':
+        path.sep = '\\';
+        break;
+    default:
+        path.sep = '/';
+}
 
 path.join = (...args) => {
     let p = args.join(path.sep);
