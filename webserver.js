@@ -4,6 +4,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+console.log(path.sep);
+
 app.get('/index.js', (req, res) => res.sendFile(path.join(__dirname, 'index.js')));
 app.get('/bad.woff', (req, res) => res.sendFile(path.join(__dirname, 'bad.woff')));
 app.get('/comic.woff', (req, res) => res.sendFile(path.join(__dirname, 'comic.woff')));
