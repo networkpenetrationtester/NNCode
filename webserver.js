@@ -15,7 +15,7 @@ const middleware = (req, res, next) => {
 app.use(middleware);
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'www', 'index.html'));
 });
 
 app.get('/*any', (req, res) => {
