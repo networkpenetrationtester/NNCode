@@ -1,123 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 
 <html>
-
-<head>
+  <head>
     <title>NNCode</title>
-    <link rel="icon" href="/www/favicon.ico" sizes="100x100" type="image/x-icon">
-</head>
+    <link
+      rel="icon"
+      href="/www/favicon.ico"
+      sizes="100x100"
+      type="image/x-icon"
+    />
+  </head>
 
-<script src="/www/js/index.js"></script>
-
-<body style="background-color: black;">
+  <body style="background-color: black">
     <div id="main">
-        <h1>NNCode</h1>
-        <!-- <textarea id="test" oninput="resize(this)" placeholder="help"></textarea> -->
+      <h1>NNCode</h1>
+      <!-- <textarea id="test" oninput="resize(this)" placeholder="help"></textarea> -->
 
-        <hr>
+      <hr />
 
-        <h3>Cipher</h3>
-        <h6>(only 26 alphanumerical characters will be used)</h6>
-        <textarea id="cipher" oninput="resize(this)" placeholder="Type your cipher here..."></textarea>
-        <h3>Usable Cipher Preview</h3>
-        <textarea id="cipher_preview" placeholder="<blank>" disabled></textarea>
+      <h3>Cipher</h3>
+      <h6>(only 26 alphanumerical characters will be used)</h6>
+      <textarea
+        id="cipher"
+        oninput="resize(this)"
+        placeholder="Type your cipher here..."
+      ></textarea>
+      <h3>Usable Cipher Preview</h3>
+      <textarea id="cipher_preview" placeholder="<blank>" disabled></textarea>
 
-        <hr>
+      <hr />
 
-        <h3>Message</h3>
-        <textarea id="message" oninput="resize(this)" type="text" placeholder="Type your message here..."></textarea>
-        <h6><label>Keep Whitespace <input id="keep_whitespace" type="checkbox"></label></h6>
-        <button id="encode">NNcode on that thang!</button>
-        <button id="decode">DDcode on that thang!</button>
+      <h3>Message</h3>
+      <textarea
+        id="message"
+        oninput="resize(this)"
+        type="text"
+        placeholder="Type your message here..."
+      ></textarea>
+      <h6>
+        <label
+          >Keep Whitespace <input id="keep_whitespace" type="checkbox" />
+        </label>
+        <br />
+        <label>
+          Typewriter Drama <input id="typewriter_drama" type="checkbox" />
+        </label>
+      </h6>
+      <button id="encode">NNcode on that thang!</button>
+      <button id="decode">DDcode on that thang!</button>
 
-        <hr>
+      <hr />
 
-        <h3>Output</h3>
-        <textarea id="ciphertext" oninput="resize(this)" placeholder="Hack Tuah!"></textarea>
+      <h3>Output</h3>
+      <textarea
+        id="ciphertext"
+        oninput="resize(this)"
+        placeholder="Hack Tuah!"
+      ></textarea>
     </div>
-</body>
+  </body>
 
-<style>
+  <style>
     @font-face {
-        font-family: "Comic Sans MS3";
-        src: url("/www/fonts/comic.woff") format("woff");
+      font-family: "Comic Sans MS3";
+      src: url("/www/fonts/comic.woff") format("woff");
     }
 
     @font-face {
-        font-family: "Consolas";
-        src: url("/www/fonts/consolas.woff") format("woff");
+      font-family: "Consolas";
+      src: url("/www/fonts/consolas.woff") format("woff");
     }
 
     @font-face {
-        font-family: "Bad Handwriting";
-        src: url("/www/fonts/bad.woff") format("woff");
+      font-family: "Bad Handwriting";
+      src: url("/www/fonts/bad.woff") format("woff");
     }
 
     @font-face {
-        font-family: "AA Typewriter";
-        src: url("/www/fonts/typewriter.woff") format("woff");
+      font-family: "AA Typewriter";
+      src: url("/www/fonts/typewriter.woff") format("woff");
     }
 
     #main {
-        font-family: "Bad Handwriting";
-        text-align: center;
-        background-color: black;
-        color: cyan;
+      font-family: "Bad Handwriting";
+      text-align: center;
+      background-color: black;
+      color: cyan;
     }
 
     button {
-        font-family: "Bad Handwriting";
-        background-color: black;
-        color: cyan;
+      font-family: "Bad Handwriting";
+      background-color: black;
+      color: cyan;
     }
 
     textarea {
-        font-family: "AA Typewriter";
+      font-family: "AA Typewriter";
 
-        width: auto;
-        height: auto;
+      width: auto;
+      height: auto;
 
-        overflow: hidden;
-        resize: none;
-        white-space: nowrap;
+      overflow: hidden;
+      resize: none;
+      white-space: nowrap;
 
-        padding: 8px 12px;
-        margin: 8px;
+      padding: 8px 12px;
+      margin: 8px;
 
-        border-radius: 6px;
-        background-color: black;
-        border: 1px solid gray;
-        color: cyan;
+      border-radius: 6px;
+      background-color: black;
+      border: 1px solid gray;
+      color: cyan;
     }
-</style>
+  </style>
 
-<script>
+  <script>
+    let CIPHER_TO_ENGLISH_DICTIONARY = {};
+    let ENGLISH_TO_CIPHER_DICTIONARY = {};
+    let INDEX_MAPPINGS = {};
+    const ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    function SanitizeCipher(cipher) {
+      return (
+        cipher
+          ?.toString()
+          ?.toUpperCase() // consistent with dictionary
+          ?.match(/[a-zA-Z0-9]/g) // only match alphanumerical values (no underscores)
+          ?.join("") // turn it back into a string
+          ?.substring(0, 26) // clip long ciphers to 26
+          ?.padEnd(26, "#") ?? // pad short ciphers with # to 26
+        ""
+      ); // if the cipher is unusable, prevent undefined & display '<blank>'
+    }
+
+    function ResetDictionaries() {
+      CIPHER_TO_ENGLISH_DICTIONARY = {};
+      ENGLISH_TO_CIPHER_DICTIONARY = {};
+      INDEX_MAPPINGS = {};
+    }
+
+    function CreateDictionaries(cipher) {
+      ResetDictionaries();
+
+      let CIPHERTEXT = SanitizeCipher(cipher);
+
+      for (const english_letter of ENGLISH_ALPHABET) {
+        // populate the default english dictionary
+        ENGLISH_TO_CIPHER_DICTIONARY[english_letter] = null;
+      }
+
+      for (const cipher_letter of CIPHERTEXT) {
+        // populate the default cipher dictionary
+        CIPHER_TO_ENGLISH_DICTIONARY[cipher_letter] = null;
+      }
+
+      // let log = [];
+
+      for (let i = 0; i < 26; i++) {
+        const english_letter = ENGLISH_ALPHABET[i];
+        const cipher_letter = CIPHERTEXT[i];
+
+        if (INDEX_MAPPINGS[cipher_letter] == null) {
+          // first occurance of the letter in the cipher.
+          ENGLISH_TO_CIPHER_DICTIONARY[english_letter] = cipher_letter;
+          CIPHER_TO_ENGLISH_DICTIONARY[cipher_letter] = english_letter;
+          INDEX_MAPPINGS[cipher_letter] = i;
+        } else {
+          // this letter has appeared in the ciphertext before.
+          const recursive_assignment = `{${INDEX_MAPPINGS[cipher_letter] + 1}}`;
+          ENGLISH_TO_CIPHER_DICTIONARY[english_letter] = recursive_assignment;
+          CIPHER_TO_ENGLISH_DICTIONARY[recursive_assignment] = english_letter;
+          INDEX_MAPPINGS[cipher_letter] = i;
+        }
+
+        // log.push(
+        //     [
+        //         CIPHERTEXT[i],
+        //         i + 1,
+        //         `${ENGLISH_ALPHABET[i]} -> ${ENGLISH_TO_CIPHER_DICTIONARY[ENGLISH_ALPHABET[i]]}`
+        //     ].join(', ')
+        // );
+      }
+
+      // log = log.join('\n');
+      // console.log(log);
+      // console.log(ENGLISH_TO_CIPHER_DICTIONARY);
+      // console.log(CIPHER_TO_ENGLISH_DICTIONARY);
+
+      TestDictionaries();
+    }
+
+    function TestDictionaries() {
+      for (const e2c_key in ENGLISH_TO_CIPHER_DICTIONARY) {
+        // e2c_key is the letter of the english alphabet
+        const e2c_value = ENGLISH_TO_CIPHER_DICTIONARY[e2c_key];
+        // e2c_value is the substitution for the english letter
+        const c2e_value = CIPHER_TO_ENGLISH_DICTIONARY[e2c_value];
+        // c2e_value is the letter of the english alphabet, and if the encoding was successful (aka the alphabets are inverses of each other), should be equal to e2c_key
+
+        if (c2e_value !== e2c_key) {
+          alert("Possible issue with cipher.");
+        }
+      }
+    }
+
+    function NNCode(message, keep_whitespace = false) {
+      let ciphertext = "";
+      message = message.toString().toUpperCase();
+
+      for (const char of message) {
+        ciphertext += Object.keys(ENGLISH_TO_CIPHER_DICTIONARY).includes(char)
+          ? ENGLISH_TO_CIPHER_DICTIONARY[char]
+          : char;
+      }
+
+      if (!keep_whitespace) ciphertext = ciphertext.replace(/\s/g, ""); // make the boundaries between words less obvious lmao
+
+      return ciphertext;
+    }
+
+    function DDCode(ciphertext) {
+      let message = "",
+        iterator = ciphertext
+          .toString()
+          .toUpperCase()
+          .matchAll(/(\w|\{[0-9]+\})/g), // only match items that we can decode.
+        previous_match = {};
+
+      for (
+        let result = iterator.next(), i = 0;
+        ;
+        result = iterator.next(), i++
+      ) {
+        let current_match = result.value,
+          cipher_char = current_match?.[0],
+          char = Object.keys(CIPHER_TO_ENGLISH_DICTIONARY).includes(cipher_char)
+            ? CIPHER_TO_ENGLISH_DICTIONARY[cipher_char]
+            : cipher_char; // just a failsafe
+
+        let l = previous_match?.index + previous_match?.[0]?.length;
+        let r = current_match?.index;
+
+        if (i !== 0 && !result.done) {
+          if (l != r) {
+            let passthrough = ciphertext.substring(l, r);
+            message += passthrough; // stuff that doesn't get decoded, i.e. whitespace/special chars
+          }
+        }
+
+        if (!result.done) {
+          // keep going~
+          char && (message += char);
+          previous_match = current_match;
+        } else {
+          if (l != ciphertext.length) {
+            // this would be trailing special characters that weren't picked up by the regex matcher.
+            let end = ciphertext.substring(l);
+            message += end; // from l to end
+          }
+          return message;
+        }
+      }
+    }
+  </script>
+
+  <script>
     function resize(el) {
-        el.style.height = 'auto';
-        el.style.height = el.scrollHeight + 'px';
-        el.style.width = 'auto';
-        el.style.width = el.scrollWidth + 'px';
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+      el.style.width = "auto";
+      el.style.width = el.scrollWidth + "px";
     }
 
     async function dramatic(el, text, ms = 10) {
-        el.value = "";
-        encode.disabled = true;
-        decode.disabled = true;
-        for (const char of text) {
-            await new Promise(resolve => setTimeout(resolve, ms));
-            el.value += char;
-            resize(el);
-        }
-        updateEncodeButton();
+      el.value = "";
+      encode.disabled = true;
+      decode.disabled = true;
+      for (const char of text) {
+        await new Promise((resolve) => setTimeout(resolve, ms));
+        el.value += char;
+        resize(el);
+      }
+      updateEncodeButton();
     }
 
-    const cipher = document.getElementById('cipher');
-    const cipher_preview = document.getElementById('cipher_preview');
-    const input = document.getElementById('message');
-    const encode = document.getElementById('encode');
-    const decode = document.getElementById('decode');
-    const output = document.getElementById('ciphertext');
-    const keep_whitespace = document.getElementById('keep_whitespace');
+    const cipher = document.getElementById("cipher");
+    const cipher_preview = document.getElementById("cipher_preview");
+    const input = document.getElementById("message");
+    const encode = document.getElementById("encode");
+    const decode = document.getElementById("decode");
+    const output = document.getElementById("ciphertext");
+    const keep_whitespace = document.getElementById("keep_whitespace");
+    const typewriter_drama = document.getElementById("typewriter_drama");
     // const test = document.getElementById('test');
 
     encode.disabled = true;
@@ -127,39 +301,51 @@
     let message_usable = false;
 
     function updateEncodeButton() {
-        encode.disabled = !(cipher_usable && message_usable);
-        decode.disabled = !(cipher_usable && message_usable);
+      encode.disabled = !(cipher_usable && message_usable);
+      decode.disabled = !(cipher_usable && message_usable);
     }
 
-    cipher.addEventListener('input', () => {
-        cipher_preview.value = SanitizeCipher(cipher.value);
-        resize(cipher_preview);
-        cipher_usable = !(cipher_preview.value == '' || cipher_preview.value == undefined);
-        updateEncodeButton();
+    cipher.addEventListener("input", () => {
+      cipher_preview.value = SanitizeCipher(cipher.value);
+      resize(cipher_preview);
+      cipher_usable = !(
+        cipher_preview.value == "" || cipher_preview.value == undefined
+      );
+      updateEncodeButton();
     });
 
-    message.addEventListener('input', () => {
-        message_usable = !(message.value == '' || message.value == undefined);
-        updateEncodeButton();
+    message.addEventListener("input", () => {
+      message_usable = !(message.value == "" || message.value == undefined);
+      updateEncodeButton();
     });
 
     // experiment: swapping 'output' with 'input'
 
-    encode.addEventListener('click', async () => {
-        CreateDictionaries(cipher.value);
-        await dramatic(output, NNCode(input.value, keep_whitespace.checked), 10);
+    encode.addEventListener("click", async () => {
+      CreateDictionaries(cipher.value);
+
+      if (typewriter_drama.checked) {
+        await dramatic(output, NNCode(input.value, keep_whitespace.checked));
+      } else {
+        output.value = NNCode(input.value, keep_whitespace.checked);
+        resize(output);
+      }
     });
 
-    decode.addEventListener('click', async () => {
-        CreateDictionaries(cipher.value);
-        // output.value = DDCode(input.value);
-        await dramatic(output, DDCode(input.value), 10);
+    decode.addEventListener("click", async () => {
+      CreateDictionaries(cipher.value);
+
+      if (typewriter_drama.checked) {
+        await dramatic(output, DDCode(input.value, keep_whitespace.checked));
+      } else {
+        output.value = DDCode(input.value, keep_whitespace.checked);
+        resize(output);
+      }
     });
 
-    for (const el of document.getElementById('main').children) { // initial resize on all textarea
-        el.type === 'textarea' && resize(el);
+    for (const el of document.getElementById("main").children) {
+      // initial resize on all textarea
+      el.type === "textarea" && resize(el);
     }
-
-</script>
-
+  </script>
 </html>
